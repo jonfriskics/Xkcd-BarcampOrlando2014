@@ -21,7 +21,7 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
         return NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
     }()
     
-    lazy var imageScrollView:UIScrollView? = {
+    lazy var imageScrollView:UIScrollView! = {
         let sv = UIScrollView()
         sv.delegate = self
         sv.maximumZoomScale = 5.0
@@ -29,13 +29,13 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
         return sv
     }()
     
-    lazy var imageViewInScrollView:UIImageView? = {
+    lazy var imageViewInScrollView:UIImageView! = {
         let iv = UIImageView()
         iv.userInteractionEnabled = true
         return iv
     }()
     
-    lazy var comicTitle:UILabel? = {
+    lazy var comicTitle:UILabel! = {
         let label = UILabel()
         label.textAlignment = .Center
         return label
@@ -63,17 +63,12 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
         view.backgroundColor = UIColor.whiteColor()
         
         let longPressOnImage = UILongPressGestureRecognizer(target: self, action:"imageLongPressed:")
-        imageViewInScrollView?.addGestureRecognizer(longPressOnImage)
+        imageViewInScrollView.addGestureRecognizer(longPressOnImage)
         
-        imageScrollView?.addSubview(imageViewInScrollView!)
+        imageScrollView.addSubview(imageViewInScrollView)
 
-        if let isv = imageScrollView {
-            view.addSubview(isv)
-        }
-        
-        if let ct = comicTitle {
-            view.addSubview(ct)
-        }
+        view.addSubview(imageScrollView)
+        view.addSubview(comicTitle)
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -88,7 +83,6 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
             let task:NSURLSessionDataTask = s.dataTaskWithRequest(comicURLRequest, completionHandler: {(data: NSData!, response: NSURLResponse!, error: NSError!) in
                 
                 var jsonParsingError:NSError?
-                
                 var jsonResponse:NSDictionary? = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves, error: &jsonParsingError) as NSDictionary?
                 
                 if let jsonResp = jsonResponse {
@@ -120,14 +114,16 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         
-        if(imageViewInScrollView?.frame.size.height > 400) {
-            imageScrollView?.frame = CGRect(x: 0, y: topLayoutGuide.length, width: 320, height: 400)
+        imageViewInScrollView.sizeToFit()
+        
+        if(imageViewInScrollView.frame.size.height > 400) {
+            imageScrollView.frame = CGRect(x: 0, y: topLayoutGuide.length, width: 320, height: 400)
         } else {
-            imageScrollView?.frame = CGRect(x: 0, y: topLayoutGuide.length, width: 320, height: imageViewInScrollView!.frame.size.height)
+            imageScrollView.frame = CGRect(x: 0, y: topLayoutGuide.length, width: 320, height: imageViewInScrollView.frame.size.height)
         }
-        imageScrollView?.contentSize = CGSize(width: imageViewInScrollView!.frame.size.width, height: imageViewInScrollView!.frame.size.height)
+        imageScrollView.contentSize = CGSize(width: imageViewInScrollView.frame.size.width, height: imageViewInScrollView.frame.size.height)
             
-        comicTitle?.frame = CGRect(x: 0, y: CGRectGetMaxY(imageScrollView!.frame), width: 320, height: 30)
+        comicTitle.frame = CGRect(x: 0, y: CGRectGetMaxY(imageScrollView.frame), width: 320, height: 30)
     }
     
     // MARK: ------ Scroll view delegate methods
@@ -149,8 +145,8 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
             let size = img.size
             
             dispatch_async(dispatch_get_main_queue(), {
-                self.imageViewInScrollView?.image = img
-                self.imageViewInScrollView?.contentMode = UIViewContentMode.ScaleAspectFit
+                self.imageViewInScrollView.image = img
+                self.imageViewInScrollView.contentMode = UIViewContentMode.ScaleAspectFit
                 
                 var heightToSet:CGFloat
                 if(size.height > 400) {
@@ -159,7 +155,7 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
                     heightToSet = size.height;
                 }
                 
-                self.imageViewInScrollView?.frame = CGRect(x: 0, y: 0, width: 320, height: heightToSet);
+                self.imageViewInScrollView.frame = CGRect(x: 0, y: 0, width: 320, height: heightToSet);
                 
                 self.view.setNeedsLayout()
             });

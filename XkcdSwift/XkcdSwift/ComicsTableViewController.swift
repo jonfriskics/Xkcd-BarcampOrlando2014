@@ -22,13 +22,13 @@ class ComicsTableViewController: UITableViewController {
         return NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
     }()
     
-    lazy var headerView:UIView? = {
+    lazy var headerView:UIView! = {
         let headerView = UIView()
         headerView.backgroundColor = UIColor.whiteColor()
         return headerView
     }()
     
-    lazy var headerImageView:UIImageView? = {
+    lazy var headerImageView:UIImageView! = {
         let headerImageView = UIImageView()
         return headerImageView
     }()
@@ -91,13 +91,11 @@ class ComicsTableViewController: UITableViewController {
 
         tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: "comicCell")
         
-        headerImageView?.image = UIImage(named: "terrible_small_logo")
+        headerImageView.image = UIImage(named: "terrible_small_logo")
         
-        if let headerImageView = headerImageView {
-            headerView?.addSubview(headerImageView)
-        }
+        headerView.addSubview(headerImageView)
         
-        tableView?.tableHeaderView = headerView?
+        tableView.tableHeaderView = headerView
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -112,12 +110,10 @@ class ComicsTableViewController: UITableViewController {
         tableView.frame = view.frame
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         
-        headerView?.frame = CGRect(x: 0, y: 0, width: 320, height: 100)
+        headerView.frame = CGRect(x: 0, y: 0, width: 320, height: 100)
 
-        headerImageView?.frame = CGRect(x: CGRectGetMidX(headerView!.frame) - headerImageView!.image!.size.width / 2,
-            y: CGRectGetMidY(headerView!.frame) - headerImageView!.image!.size.height / 2,
-            width: headerImageView!.image!.size.width,
-            height: headerImageView!.image!.size.height)
+        headerImageView.sizeToFit()
+        headerImageView.frame = CGRect(x: CGRectGetMidX(headerView.frame) - headerImageView.frame.size.width / 2, y: CGRectGetMidY(headerView.frame) - headerImageView.frame.size.height / 2, width: headerImageView.frame.size.width, height: headerImageView.frame.size.height)
     }
     
     // MARK: ------ Table view data source
