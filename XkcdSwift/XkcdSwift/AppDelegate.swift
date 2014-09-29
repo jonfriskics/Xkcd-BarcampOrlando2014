@@ -25,8 +25,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let navController = UINavigationController(rootViewController: comicsTVC)
         
-        window!.rootViewController = navController
-        window!.makeKeyAndVisible()
+        window?.rootViewController = navController
+        window?.makeKeyAndVisible()
         
         return true
     }

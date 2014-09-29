@@ -10,10 +10,28 @@ import UIKit
 
 class ComicsTableViewController: UITableViewController {
 
+    // MARK: ------ Input Properties
+
     // MARK: ------ Property declarations
 
-    var session:NSURLSession?
     var dataSource:NSArray?
+
+    // MARK: ------ Lazy Property Initializers
+
+    lazy var session:NSURLSession? = {
+        return NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
+    }()
+    
+    lazy var headerView:UIView? = {
+        let headerView = UIView()
+        headerView.backgroundColor = UIColor.whiteColor()
+        return headerView
+    }()
+    
+    lazy var headerImageView:UIImageView? = {
+        let headerImageView = UIImageView()
+        return headerImageView
+    }()
     
     // MARK: ------ Initializers
 
@@ -33,17 +51,12 @@ class ComicsTableViewController: UITableViewController {
     // MARK: ------ Setup methods
 
     func setupDataSource() -> Void {
-        session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
+        let currentComicURLRequest = NSURLRequest(URL: NSURL(string: "http://xkcd.com/info.0.json"))
         
-        let currentComicURLString = "http://xkcd.com/info.0.json"
-        let currentComicURL = NSURL(string: currentComicURLString)
-        let currentComicURLRequest = NSURLRequest(URL: currentComicURL)
-        
-        let task:NSURLSessionDataTask = session!.dataTaskWithRequest(currentComicURLRequest, completionHandler: {(data: NSData!, response: NSURLResponse!, error: NSError!) in
+        let task:NSURLSessionDataTask? = session?.dataTaskWithRequest(currentComicURLRequest, completionHandler: {(data: NSData!, response: NSURLResponse!, error: NSError!) in
             
             var jsonParsingError:NSError?
-            
-            let jsonResponse = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves, error: &jsonParsingError) as NSDictionary?
+            let jsonResponse = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: &jsonParsingError) as NSDictionary?
             
             if let jsonResp = jsonResponse {
                 let rowCount = jsonResp["num"] as Int
@@ -68,7 +81,7 @@ class ComicsTableViewController: UITableViewController {
             }
         })
         
-        task.resume()
+        task?.resume()
     }
 
     // MARK: ------ View Controller lifecycle
@@ -78,18 +91,13 @@ class ComicsTableViewController: UITableViewController {
 
         tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: "comicCell")
         
-        let headerView = UIView()
-        headerView.frame = CGRect(x: 0, y: 0, width: 320, height: 100)
-        headerView.backgroundColor = UIColor.whiteColor()
+        headerImageView?.image = UIImage(named: "terrible_small_logo")
         
-        let headerImage = UIImage(named: "terrible_small_logo")
-        let headerImageView = UIImageView(image: headerImage)
+        if let headerImageView = headerImageView {
+            headerView?.addSubview(headerImageView)
+        }
         
-        headerImageView.frame = CGRect(x: CGRectGetMidX(headerView.frame) - headerImage.size.width / 2, y: CGRectGetMidY(headerView.frame) - headerImage.size.height / 2, width: headerImage.size.width, height: headerImage.size.height)
-        
-        headerView.addSubview(headerImageView)
-        
-        tableView.tableHeaderView = headerView
+        tableView?.tableHeaderView = headerView?
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -103,6 +111,13 @@ class ComicsTableViewController: UITableViewController {
         
         tableView.frame = view.frame
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        
+        headerView?.frame = CGRect(x: 0, y: 0, width: 320, height: 100)
+
+        headerImageView?.frame = CGRect(x: CGRectGetMidX(headerView!.frame) - headerImageView!.image!.size.width / 2,
+            y: CGRectGetMidY(headerView!.frame) - headerImageView!.image!.size.height / 2,
+            width: headerImageView!.image!.size.width,
+            height: headerImageView!.image!.size.height)
     }
     
     // MARK: ------ Table view data source
@@ -115,17 +130,15 @@ class ComicsTableViewController: UITableViewController {
         if let ds = dataSource {
             return ds.count
         }
-        return 1
+        return 0
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCellWithIdentifier("comicCell", forIndexPath: indexPath) as UITableViewCell
         
-        if let ds = dataSource {
-            if let dict = ds[indexPath.row] as? NSDictionary {
-                cell.textLabel?.text = String(dict["comicNumber"] as Int)
-            }
+        if let dict = dataSource?[indexPath.row] as? NSDictionary {
+            cell.textLabel?.text = String(dict["comicNumber"] as Int)
         }
         
         return cell
@@ -137,7 +150,7 @@ class ComicsTableViewController: UITableViewController {
         
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
         
-        var comicVC = ComicViewController(passedInComic: dataSource![indexPath.row] as NSDictionary)
+        var comicVC = ComicViewController(passedInComic: dataSource?[indexPath.row] as NSDictionary)
 
         navigationController?.pushViewController(comicVC, animated: true)
     }

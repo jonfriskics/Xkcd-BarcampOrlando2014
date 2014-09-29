@@ -15,7 +15,7 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
     var comicToLoad:NSDictionary
     var comicInfo:NSDictionary?
     
-    // MARK: ------ Lazy Initializers
+    // MARK: ------ Lazy Property Initializers
 
     lazy var session:NSURLSession? = {
         return NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
@@ -81,11 +81,8 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
         
         navigationController?.setNavigationBarHidden(false, animated: true)
         
-        let comicNum:Int = comicToLoad["comicNumber"] as Int
-        let comicNumber = String(comicNum)
-        let comicURLString = "http://xkcd.com/" + comicNumber + "/info.0.json"
-        let comicURL = NSURL(string: comicURLString)
-        let comicURLRequest = NSURLRequest(URL: comicURL)
+        let comicURLString = "http://xkcd.com/" + String(comicToLoad["comicNumber"] as Int) + "/info.0.json"
+        let comicURLRequest = NSURLRequest(URL: NSURL(string: comicURLString))
         
         if let s = session {
             let task:NSURLSessionDataTask = s.dataTaskWithRequest(comicURLRequest, completionHandler: {(data: NSData!, response: NSURLResponse!, error: NSError!) in
@@ -106,7 +103,9 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
                         }
                     })
                     
-                    self.displayComic()
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        self.displayComic()
+                    })
                 } else {
                     if let error = jsonParsingError {
                         println("Error reading json " + error.localizedDescription)
@@ -146,12 +145,7 @@ class ComicViewController: UIViewController, UIScrollViewDelegate {
         });
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), {
-            let url = NSURL(string: self.comicInfo!["img"] as String)
-            
-            let data = NSData(contentsOfURL: url)
-            
-            let img = UIImage(data: data)
-            
+            let img = UIImage(data: NSData(contentsOfURL: NSURL(string: self.comicInfo!["img"] as String)))
             let size = img.size
             
             dispatch_async(dispatch_get_main_queue(), {
